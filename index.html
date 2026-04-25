@@ -1,0 +1,663 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Galaxy Automation | Engineering the Future</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:ital,wght@0,200;0,300;0,400;0,600;0,700;0,800;1,300&display=swap" rel="stylesheet">
+<style>
+:root{--c:#00ffe7;--c2:#0057ff;--c3:#ff4d00;--c4:#00ff88;--bg:#04080f;--bg2:#070e1a;--bg3:#0a1628;--t:#d0eeff;--tm:#6a9fc0;--tw:#fff;--glow:0 0 30px rgba(0,255,231,.25);--glow2:0 0 20px rgba(0,87,255,.3)}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--t);font-family:'Exo 2',sans-serif;overflow-x:hidden;cursor:none}
+#cursor{position:fixed;width:10px;height:10px;background:var(--c);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:screen;transition:width .2s,height .2s}
+#cursor-ring{position:fixed;width:32px;height:32px;border:1px solid rgba(0,255,231,.5);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);mix-blend-mode:screen;transition:width .3s,height .3s,opacity .3s}
+.page{display:none;min-height:100vh;animation:pagein .5s ease}
+.page.active{display:block}
+@keyframes pagein{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+#bgc{position:fixed;inset:0;z-index:0;pointer-events:none}
+.scan{position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,231,.007) 2px,rgba(0,255,231,.007) 4px);pointer-events:none;z-index:200}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:500;padding:0 60px;height:68px;display:flex;align-items:center;justify-content:space-between;background:rgba(4,8,15,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(0,255,231,.07)}
+.logo{display:flex;align-items:center;gap:12px;font-family:'Orbitron',sans-serif;font-size:17px;font-weight:700;color:#fff;cursor:pointer;letter-spacing:1px;text-decoration:none}
+.logo-hex{width:36px;height:36px;flex-shrink:0}
+.logo-hex svg{width:100%;height:100%}
+.logo em{color:var(--c);font-style:normal}
+.nav-links{display:flex;align-items:center;gap:6px}
+.nav-links a{color:var(--tm);text-decoration:none;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;padding:8px 13px;transition:all .3s;cursor:pointer}
+.nav-links a:hover{color:var(--c)}
+.nav-cta-btn{background:transparent!important;border:1px solid var(--c)!important;color:var(--c)!important;padding:9px 20px!important;transition:all .3s!important}
+.nav-cta-btn:hover{background:var(--c)!important;color:#000!important;box-shadow:var(--glow)!important}
+.nav-back{display:none;align-items:center;gap:8px;color:var(--tm);font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:color .3s}
+.nav-back:hover{color:var(--c)}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 40px 60px;position:relative;z-index:1}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:10px;border:1px solid rgba(0,255,231,.22);padding:7px 20px;border-radius:30px;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--c);margin-bottom:30px;background:rgba(0,255,231,.04);animation:fsd 1s ease both}
+.ping{width:7px;height:7px;background:var(--c4);border-radius:50%;box-shadow:0 0 10px var(--c4);animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes fsd{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:none}}
+@keyframes fsu{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+@keyframes shimmer{0%{background-position:0%}100%{background-position:200%}}
+.hero h1{font-family:'Orbitron',sans-serif;font-size:clamp(40px,7vw,98px);font-weight:900;line-height:.93;letter-spacing:-2px;margin-bottom:14px;animation:fsu 1s .2s ease both}
+.hero h1 .w1{display:block;color:#fff}
+.hero h1 .w2{display:block;background:linear-gradient(100deg,var(--c),var(--c2),var(--c));background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 3s linear infinite}
+.hero-sub{font-size:16px;font-weight:300;color:var(--tm);max-width:560px;line-height:1.85;margin-bottom:48px;animation:fsu 1s .4s ease both}
+.hero-btns{display:flex;gap:14px;justify-content:center;animation:fsu 1s .6s ease both}
+.btn-p{padding:14px 36px;background:linear-gradient(135deg,var(--c),var(--c2));color:#000;font-family:'Orbitron',sans-serif;font-weight:700;font-size:10px;letter-spacing:2px;border:none;cursor:pointer;clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);transition:all .3s;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.btn-p:hover{box-shadow:var(--glow),var(--glow2);transform:translateY(-3px)}
+.btn-s{padding:14px 36px;background:transparent;color:var(--t);font-family:'Orbitron',sans-serif;font-weight:600;font-size:10px;letter-spacing:2px;border:1px solid rgba(255,255,255,.15);cursor:pointer;clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);transition:all .3s;text-decoration:none}
+.btn-s:hover{border-color:var(--c);color:var(--c)}
+.hero-stats{display:flex;gap:0;margin-top:68px;animation:fi 1.5s 1s ease both;border:1px solid rgba(0,255,231,.08);background:rgba(7,14,26,.8)}
+.hstat{padding:26px 44px;border-right:1px solid rgba(0,255,231,.08);text-align:center}
+.hstat:last-child{border-right:none}
+.hstat-n{font-family:'Orbitron',sans-serif;font-size:34px;font-weight:900;color:var(--c);line-height:1}
+.hstat-l{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--tm);margin-top:6px}
+
+/* MARQUEE */
+.mwrap{position:relative;z-index:1;overflow:hidden;padding:11px 0;background:rgba(0,255,231,.025);border-top:1px solid rgba(0,255,231,.07);border-bottom:1px solid rgba(0,255,231,.07)}
+.mtrack{display:flex;gap:0;animation:mq 30s linear infinite;width:max-content}
+.mtrack span{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--tm);padding:0 36px;border-right:1px solid rgba(0,255,231,.09)}
+.mtrack span.hl{color:var(--c)}
+@keyframes mq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* SECTION COMMON */
+section{position:relative;z-index:1;padding:90px 60px}
+.sec-label{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--c);display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.sec-label::before{content:'';width:24px;height:1px;background:var(--c)}
+.sec-h{font-family:'Orbitron',sans-serif;font-size:clamp(28px,3.5vw,48px);font-weight:900;color:#fff;line-height:1.1;margin-bottom:14px}
+.sec-h .ac{color:var(--c)}
+.sec-desc{font-size:14px;color:var(--tm);max-width:480px;line-height:1.85}
+
+/* SERVICES */
+#services-section{max-width:1400px;margin:0 auto}
+.services-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:56px;flex-wrap:wrap;gap:24px}
+.sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:rgba(0,255,231,.04)}
+.scard{position:relative;background:var(--bg2);padding:42px 34px 50px;overflow:hidden;cursor:pointer;transition:all .4s;border:1px solid rgba(0,255,231,.05)}
+.scard::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,255,231,.05),rgba(0,87,255,.03));opacity:0;transition:opacity .4s}
+.scard::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--c),transparent);transform:scaleX(0);transform-origin:center;transition:transform .5s}
+.scard:hover{transform:translateY(-5px);border-color:rgba(0,255,231,.22);box-shadow:0 28px 70px rgba(0,0,0,.6),var(--glow)}
+.scard:hover::before{opacity:1}
+.scard:hover::after{transform:scaleX(1)}
+.scard-num{font-family:'Orbitron',sans-serif;font-size:68px;font-weight:900;color:rgba(0,255,231,.04);position:absolute;top:14px;right:18px;line-height:1;pointer-events:none;transition:color .4s}
+.scard:hover .scard-num{color:rgba(0,255,231,.1)}
+.scard-icon{width:52px;height:52px;margin-bottom:24px;position:relative}
+.scard-icon svg{width:100%;height:100%}
+.icon-orbit{position:absolute;inset:-9px;border:1px solid rgba(0,255,231,.14);border-radius:50%;animation:orb 8s linear infinite}
+.icon-orbit2{position:absolute;inset:-4px;border:1px dashed rgba(0,255,231,.07);border-radius:50%;animation:orb 5s linear infinite reverse}
+@keyframes orb{to{transform:rotate(360deg)}}
+.scard-title{font-family:'Orbitron',sans-serif;font-size:17px;font-weight:700;color:#fff;margin-bottom:10px}
+.scard-text{font-size:12px;color:var(--tm);line-height:1.9;margin-bottom:20px}
+.scard-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:22px}
+.chip{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;padding:4px 9px;border:1px solid rgba(0,255,231,.14);color:var(--c)}
+.scard:hover .chip{border-color:rgba(0,255,231,.32)}
+.scard-link{display:inline-flex;align-items:center;gap:7px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--c);font-weight:700;opacity:0;transform:translateX(-8px);transition:all .4s;position:absolute;bottom:26px;left:34px}
+.scard:hover .scard-link{opacity:1;transform:none}
+
+/* 3D SHOWCASE */
+#three-wrap{position:relative;z-index:1;padding:80px 60px;background:rgba(7,14,26,.35);border-top:1px solid rgba(0,255,231,.06);border-bottom:1px solid rgba(0,255,231,.06)}
+.three-inner{max-width:1400px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+#mc{width:100%;aspect-ratio:1;position:relative;border:1px solid rgba(0,255,231,.08);background:radial-gradient(ellipse at center,rgba(0,42,100,.22) 0%,transparent 70%);overflow:hidden}
+#mc canvas{width:100%!important;height:100%!important}
+.mc-badge{position:absolute;bottom:14px;left:14px;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--tm);display:flex;align-items:center;gap:7px}
+.mc-badge .dot{width:5px;height:5px;background:var(--c4);border-radius:50%;animation:blink 1.5s infinite}
+.feats{display:flex;flex-direction:column;gap:0}
+.feat{display:flex;gap:18px;padding:22px 18px;border-bottom:1px solid rgba(0,255,231,.06);cursor:pointer;transition:all .3s;position:relative}
+.feat:first-child{border-top:1px solid rgba(0,255,231,.06)}
+.feat::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--c);transform:scaleY(0);transition:transform .3s}
+.feat:hover{background:rgba(0,255,231,.025);padding-left:26px}
+.feat:hover::before{transform:scaleY(1)}
+.feat-n{font-family:'Orbitron',sans-serif;font-size:24px;font-weight:900;color:rgba(0,255,231,.18);min-width:38px;line-height:1;transition:color .3s}
+.feat:hover .feat-n{color:rgba(0,255,231,.5)}
+.feat-title{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;color:#fff;margin-bottom:6px}
+.feat-desc{font-size:11px;color:var(--tm);line-height:1.75}
+
+/* PROCESS */
+.proc-inner{max-width:1400px;margin:0 auto}
+.psteps{display:grid;grid-template-columns:repeat(5,1fr);margin-top:64px;position:relative}
+.psteps::before{content:'';position:absolute;top:50px;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--c),var(--c2),var(--c),transparent);animation:fl 2s ease-in-out infinite alternate}
+@keyframes fl{from{opacity:.3}to{opacity:1}}
+.pstep{display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 10px;position:relative}
+.pstep-hex{width:100px;height:100px;position:relative;margin-bottom:26px}
+.pstep-hex svg{width:100%;height:100%}
+.pstep-n{font-family:'Orbitron',sans-serif;font-size:24px;font-weight:900;color:var(--c);position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.pstep-title{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:#fff;margin-bottom:8px}
+.pstep-desc{font-size:10px;color:var(--tm);line-height:1.85}
+
+/* WHY */
+#why{background:rgba(7,14,26,.35)}
+.why-inner{max-width:1400px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start}
+.why-list{display:flex;flex-direction:column;gap:0}
+.why-item{display:flex;gap:16px;padding:24px 0;border-bottom:1px solid rgba(0,255,231,.06);cursor:pointer;transition:all .3s}
+.why-item:first-child{border-top:1px solid rgba(0,255,231,.06)}
+.why-item:hover{padding-left:10px}
+.why-icon{width:44px;height:44px;min-width:44px;background:rgba(0,255,231,.04);border:1px solid rgba(0,255,231,.1);display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .3s}
+.why-item:hover .why-icon{background:rgba(0,255,231,.09);border-color:var(--c);box-shadow:var(--glow)}
+.why-title{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:#fff;margin-bottom:7px}
+.why-desc{font-size:11px;color:var(--tm);line-height:1.8}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:2px;background:rgba(0,255,231,.04)}
+.metric{background:var(--bg2);padding:40px;text-align:center;border:1px solid rgba(0,255,231,.05);position:relative;overflow:hidden;transition:all .3s}
+.metric::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at center,rgba(0,255,231,.06),transparent 70%);opacity:0;transition:opacity .4s}
+.metric:hover::before{opacity:1}
+.metric:hover{border-color:rgba(0,255,231,.18)}
+.mval{font-family:'Orbitron',sans-serif;font-size:48px;font-weight:900;line-height:1;background:linear-gradient(135deg,var(--c),var(--c2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.msuf{font-size:26px}
+.mlabel{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--tm);margin-top:9px}
+
+/* INDUSTRIES */
+#ind .ind-inner{max-width:1400px;margin:0 auto}
+.ipills{display:flex;flex-wrap:wrap;gap:10px;margin-top:48px}
+.ipill{padding:13px 22px;border:1px solid rgba(0,255,231,.1);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--tm);transition:all .3s;cursor:pointer;background:rgba(7,14,26,.6)}
+.ipill:hover{border-color:var(--c);color:var(--c);background:rgba(0,255,231,.04);transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.4)}
+
+/* CONTACT */
+#contact-sect{background:linear-gradient(180deg,transparent,rgba(0,42,100,.08))}
+.contact-inner{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:72px}
+.cinfo h3{font-family:'Orbitron',sans-serif;font-size:20px;font-weight:700;color:#fff;margin-bottom:14px}
+.cdesc{font-size:12px;color:var(--tm);line-height:1.85;margin-bottom:28px}
+.cdetail{display:flex;gap:11px;align-items:flex-start;margin-bottom:16px;font-size:12px;color:var(--tm)}
+.cdetail-icon{color:var(--c);font-size:15px;min-width:18px;margin-top:1px}
+.cdetail strong{color:#fff;display:block;margin-bottom:2px}
+.cform{display:flex;flex-direction:column;gap:12px}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:8px;letter-spacing:2.5px;text-transform:uppercase;color:var(--tm)}
+.fg input,.fg textarea,.fg select{background:rgba(0,42,100,.18);border:1px solid rgba(0,255,231,.1);color:var(--t);padding:10px 13px;font-family:'Exo 2',sans-serif;font-size:12px;outline:none;transition:border-color .3s;width:100%}
+.fg input:focus,.fg textarea:focus,.fg select:focus{border-color:rgba(0,255,231,.35)}
+.fg select option{background:var(--bg3)}
+.fg textarea{height:80px;resize:none}
+.btn-sub{padding:14px;background:linear-gradient(135deg,var(--c),var(--c2));color:#000;font-family:'Orbitron',sans-serif;font-weight:700;font-size:10px;letter-spacing:2px;border:none;cursor:pointer;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);transition:all .3s;width:100%}
+.btn-sub:hover{box-shadow:var(--glow);transform:translateY(-2px)}
+
+/* FOOTER */
+footer{position:relative;z-index:1;border-top:1px solid rgba(0,255,231,.07);padding:32px 60px;display:flex;align-items:center;justify-content:space-between;background:rgba(4,8,15,.9)}
+.fl{font-size:11px;color:var(--tm)}.fl strong{color:var(--c)}
+.fr{display:flex;gap:18px}
+.fr a{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--tm);text-decoration:none;cursor:pointer;transition:color .3s}
+.fr a:hover{color:var(--c)}
+
+/* SERVICE DETAIL PAGE */
+#svc-page{position:relative;z-index:1;padding-top:68px}
+.svc-hero{min-height:52vh;display:flex;align-items:flex-end;padding:60px;position:relative;overflow:hidden;border-bottom:1px solid rgba(0,255,231,.08)}
+.svc-hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 30% 60%,rgba(0,87,255,.1),transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(0,255,231,.05),transparent 50%)}
+.svc-hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(0,255,231,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,231,.025) 1px,transparent 1px);background-size:50px 50px;mask-image:linear-gradient(180deg,transparent,rgba(0,0,0,.75),transparent)}
+.svc-hero-content{position:relative;max-width:1400px;width:100%;margin:0 auto}
+.svc-bc{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--tm);margin-bottom:18px;display:flex;align-items:center;gap:7px}
+.svc-bc span{color:var(--c);cursor:pointer;transition:opacity .2s}.svc-bc span:hover{opacity:.7}
+.svc-hero-title{font-family:'Orbitron',sans-serif;font-size:clamp(36px,5vw,72px);font-weight:900;color:#fff;line-height:1;margin-bottom:14px}
+.svc-hero-title em{color:var(--c);font-style:normal}
+.svc-hero-sub{font-size:15px;color:var(--tm);max-width:580px;line-height:1.85;margin-bottom:32px}
+.svc-tags{display:flex;gap:9px;flex-wrap:wrap}
+.svc-tag{padding:6px 14px;border:1px solid rgba(0,255,231,.2);font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--c);background:rgba(0,255,231,.04)}
+.svc-body{max-width:1400px;margin:0 auto;padding:72px 60px}
+.svc-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;margin-bottom:72px}
+.svc-sect-h{font-family:'Orbitron',sans-serif;font-size:20px;font-weight:700;color:#fff;margin-bottom:18px}
+.svc-sect-h .ac{color:var(--c)}
+.svc-text{font-size:13px;color:var(--tm);line-height:1.95;margin-bottom:14px}
+.svc-list{list-style:none;display:flex;flex-direction:column;gap:11px}
+.svc-list li{display:flex;gap:11px;align-items:flex-start;font-size:12px;color:var(--tm);line-height:1.75}
+.svc-list li::before{content:'›';color:var(--c);font-size:17px;line-height:1.1;flex-shrink:0}
+.svc-software{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:18px}
+.sw-item{padding:14px 16px;border:1px solid rgba(0,255,231,.09);background:rgba(0,42,100,.09);transition:all .3s}
+.sw-item:hover{border-color:rgba(0,255,231,.28);background:rgba(0,255,231,.04)}
+.sw-name{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:#fff;margin-bottom:4px}
+.sw-desc{font-size:10px;color:var(--tm)}
+.svc-deliverables{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+.deliv{padding:22px;border:1px solid rgba(0,255,231,.07);background:var(--bg2);text-align:center;transition:all .3s}
+.deliv:hover{border-color:rgba(0,255,231,.22);transform:translateY(-4px);box-shadow:0 14px 36px rgba(0,0,0,.4)}
+.deliv-icon{font-size:26px;margin-bottom:9px}
+.deliv-title{font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;color:#fff;margin-bottom:5px}
+.deliv-desc{font-size:10px;color:var(--tm);line-height:1.65}
+.svc-cta-band{background:linear-gradient(135deg,rgba(0,87,255,.1),rgba(0,255,231,.05));border:1px solid rgba(0,255,231,.1);padding:52px;display:flex;align-items:center;justify-content:space-between;gap:36px;flex-wrap:wrap}
+.svc-cta-band h3{font-family:'Orbitron',sans-serif;font-size:22px;font-weight:900;color:#fff}
+.svc-cta-band p{font-size:13px;color:var(--tm);margin-top:7px;max-width:460px;line-height:1.75}
+.rel-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:rgba(0,255,231,.04);margin-top:26px}
+.rel-card{background:var(--bg2);padding:26px;border:1px solid rgba(0,255,231,.05);cursor:pointer;transition:all .3s}
+.rel-card:hover{border-color:rgba(0,255,231,.2);background:rgba(0,42,100,.18);transform:translateY(-3px)}
+.rel-title{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;color:#fff;margin-bottom:7px}
+.rel-desc{font-size:11px;color:var(--tm);line-height:1.7;margin-bottom:12px}
+.rel-arrow{font-size:10px;color:var(--c);letter-spacing:1px;text-transform:uppercase}
+
+/* SCROLL REVEAL */
+.rv{opacity:0;transform:translateY(26px);transition:all .6s ease}
+.rv.vis{opacity:1;transform:none}
+.rv2{opacity:0;transform:translateX(-26px);transition:all .6s .12s ease}
+.rv2.vis{opacity:1;transform:none}
+</style>
+</head>
+<body>
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<div class="scan"></div>
+<canvas id="bgc"></canvas>
+
+<!-- NAV -->
+<nav>
+  <div class="logo" onclick="goHome()">
+    <div class="logo-hex">
+      <svg viewBox="0 0 36 36" fill="none">
+        <polygon points="18,2 33,10.5 33,25.5 18,34 3,25.5 3,10.5" stroke="#00ffe7" stroke-width=".8" fill="none" opacity=".5"/>
+        <polygon points="18,7 28,13 28,23 18,29 8,23 8,13" stroke="#00ffe7" stroke-width=".5" stroke-dasharray="2 2" fill="none" opacity=".35"/>
+        <circle cx="18" cy="18" r="5" fill="#00ffe7" opacity=".9"/>
+        <line x1="18" y1="2" x2="18" y2="7" stroke="#00ffe7" stroke-width="1.5"/>
+        <line x1="18" y1="29" x2="18" y2="34" stroke="#00ffe7" stroke-width="1.5"/>
+      </svg>
+    </div>
+    GALAXY <em>AUTOMATION</em>
+  </div>
+  <div class="nav-links" id="nav-links">
+    <a onclick="navTo('#services-section')">Services</a>
+    <a onclick="navTo('#three-wrap')">Capabilities</a>
+    <a onclick="navTo('#proc')">Process</a>
+    <a onclick="navTo('#why')">Why Us</a>
+    <a onclick="navTo('#contact-sect')" class="nav-cta-btn">Get Quote</a>
+  </div>
+  <div class="nav-back" id="nav-back" onclick="goHome()">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    Back to Home
+  </div>
+</nav>
+
+<!-- HOME PAGE -->
+<div id="home-page" class="page active">
+  <section class="hero">
+    <div class="hero-eyebrow"><div class="ping"></div>Precision Engineering · Rajkot, Gujarat</div>
+    <h1><span class="w1">Engineering</span><span class="w2">The Future</span></h1>
+    <p class="hero-sub">Advanced CAD design, machine engineering and industrial automation — transforming visions into precision-built reality.</p>
+    <div class="hero-btns">
+      <a class="btn-p" onclick="navTo('#services-section')">Explore Services <svg width="13" height="13" fill="none" viewBox="0 0 14 14"><path d="M2 7h10M7 2l5 5-5 5" stroke="#000" stroke-width="1.5" stroke-linecap="round"/></svg></a>
+      <a class="btn-s" onclick="navTo('#contact-sect')">Get a Quote</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hstat"><div class="hstat-n" data-to="200">0</div><div class="hstat-l">Projects Done</div></div>
+      <div class="hstat"><div class="hstat-n" data-to="98">0</div><div class="hstat-l">Satisfaction %</div></div>
+      <div class="hstat"><div class="hstat-n" data-to="10">0</div><div class="hstat-l">Years Exp.</div></div>
+      <div class="hstat"><div class="hstat-n" data-to="50">0</div><div class="hstat-l">Industries</div></div>
+    </div>
+  </section>
+  <div class="mwrap"><div class="mtrack" id="mtrack"></div></div>
+  <section id="services-section">
+    <div style="max-width:1400px;margin:0 auto">
+      <div class="services-header rv">
+        <div><div class="sec-label">Core Services</div><h2 class="sec-h">What We <span class="ac">Build For You</span></h2></div>
+        <p class="sec-desc">From a single part drawing to a fully automated production line — every engineering need covered.</p>
+      </div>
+      <div class="sgrid rv" id="sgrid"></div>
+    </div>
+  </section>
+  <div id="three-wrap">
+    <div class="three-inner">
+      <div class="rv2">
+        <div id="mc"><canvas id="three-canvas"></canvas><div class="mc-badge"><div class="dot"></div>Interactive 3D — Drag to Rotate</div></div>
+      </div>
+      <div class="rv">
+        <div class="sec-label">3D Capabilities</div>
+        <h2 class="sec-h">Precision <span class="ac">3D Design</span><br>at Its Core</h2>
+        <p class="sec-desc" style="margin-bottom:34px">Every model built with engineering rigour — fully parametric, simulation-ready and manufacturable.</p>
+        <div class="feats" id="feats"></div>
+      </div>
+    </div>
+  </div>
+  <section id="proc">
+    <div class="proc-inner">
+      <div class="rv" style="text-align:center">
+        <div class="sec-label" style="justify-content:center">How We Work</div>
+        <h2 class="sec-h" style="text-align:center">Our <span class="ac">Engineering Process</span></h2>
+        <p class="sec-desc" style="margin:0 auto;text-align:center;max-width:500px">A streamlined 5-step workflow built for accuracy, speed and client confidence at every stage.</p>
+      </div>
+      <div class="psteps rv" id="psteps"></div>
+    </div>
+  </section>
+  <section id="why">
+    <div class="why-inner">
+      <div class="rv">
+        <div class="sec-label">Why Galaxy</div>
+        <h2 class="sec-h">Built on <span class="ac">Engineering<br>Excellence</span></h2>
+        <p class="sec-desc" style="margin-bottom:38px">Deep domain expertise + cutting-edge tools = results that consistently exceed expectations.</p>
+        <div class="why-list" id="why-list"></div>
+      </div>
+      <div class="mgrid rv">
+        <div class="metric"><div class="mval">200<span class="msuf">+</span></div><div class="mlabel">Projects</div></div>
+        <div class="metric"><div class="mval">98<span class="msuf">%</span></div><div class="mlabel">On-Time</div></div>
+        <div class="metric"><div class="mval">10<span class="msuf">+</span></div><div class="mlabel">Years Exp.</div></div>
+        <div class="metric"><div class="mval">50<span class="msuf">+</span></div><div class="mlabel">Clients</div></div>
+      </div>
+    </div>
+  </section>
+  <section id="ind">
+    <div class="ind-inner">
+      <div class="rv" style="text-align:center">
+        <div class="sec-label" style="justify-content:center">Sectors</div>
+        <h2 class="sec-h" style="text-align:center">Industries <span class="ac">We Serve</span></h2>
+      </div>
+      <div class="ipills rv" id="ipills"></div>
+    </div>
+  </section>
+  <section id="contact-sect">
+    <div class="rv" style="text-align:center;max-width:960px;margin:0 auto 50px">
+      <div class="sec-label" style="justify-content:center">Start a Project</div>
+      <h2 class="sec-h" style="text-align:center">Let's Build <span class="ac">Something Extraordinary</span></h2>
+    </div>
+    <div class="contact-inner rv">
+      <div class="cinfo">
+        <h3>Get in Touch</h3>
+        <p class="cdesc">Ready to bring your engineering vision to life? Our team delivers precise, professional results for every project scope.</p>
+        <div class="cdetail"><span class="cdetail-icon">✉</span><div><strong>Email</strong>info@galaxyautomation.in</div></div>
+        <div class="cdetail"><span class="cdetail-icon">☎</span><div><strong>Phone</strong>+91 98XXX XXXXX</div></div>
+        <div class="cdetail"><span class="cdetail-icon">◎</span><div><strong>Location</strong>Rajkot, Gujarat, India</div></div>
+        <div style="margin-top:24px;padding:16px;border:1px solid rgba(0,255,231,.1);background:rgba(0,42,100,.12)">
+          <div style="font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--c);margin-bottom:5px">Response Time</div>
+          <div style="font-size:11px;color:var(--tm)">All inquiries answered within <strong style="color:#fff">24 hours</strong> on business days.</div>
+        </div>
+      </div>
+      <div class="cform">
+        <div class="fg"><label>Full Name</label><input type="text" placeholder="Your full name"></div>
+        <div class="fg"><label>Email</label><input type="email" placeholder="you@company.com"></div>
+        <div class="fg"><label>Service Required</label>
+          <select><option value="">Select a service...</option><option>2D CAD Drafting</option><option>3D CAD Modeling</option><option>Product Design</option><option>Machine Design</option><option>Industrial Automation</option><option>Reverse Engineering</option></select>
+        </div>
+        <div class="fg"><label>Project Brief</label><textarea placeholder="Describe your requirements..."></textarea></div>
+        <button class="btn-sub" id="submit-btn" onclick="submitForm()">Send Project Brief →</button>
+      </div>
+    </div>
+  </section>
+  <footer>
+    <div class="fl">© 2025 <strong>Galaxy Automation</strong> — Rajkot, Gujarat, India. All rights reserved.</div>
+    <div class="fr">
+      <a onclick="navTo('#services-section')">Services</a>
+      <a onclick="navTo('#proc')">Process</a>
+      <a onclick="navTo('#why')">Why Us</a>
+      <a onclick="navTo('#contact-sect')">Contact</a>
+    </div>
+  </footer>
+</div>
+
+<!-- SERVICE DETAIL PAGE -->
+<div id="svc-page" class="page">
+  <div class="svc-hero">
+    <div class="svc-hero-bg"></div>
+    <div class="svc-hero-grid"></div>
+    <div class="svc-hero-content">
+      <div class="svc-bc"><span onclick="goHome()">Home</span>›<span onclick="goHome();navTo('#services-section')">Services</span>›<span id="svc-bc-name"></span></div>
+      <div class="svc-hero-title" id="svc-title"></div>
+      <p class="svc-hero-sub" id="svc-sub"></p>
+      <div class="svc-tags" id="svc-tags"></div>
+    </div>
+  </div>
+  <div class="svc-body" id="svc-body"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// DATA
+const SVC=[
+  {id:0,title:'2D CAD Drafting',headline:'Precision 2D CAD<br><em>Drafting</em>',sub:'Accurate, standards-compliant technical drawings for manufacturing, construction and documentation — delivered with speed and clarity.',chips:['AutoCAD','DraftSight','GD&T','ISO Standards','ASME','DIN'],desc:'Galaxy Automation\'s 2D CAD drafting service transforms your ideas, sketches, or physical parts into precise, production-ready technical drawings. Our certified drafters follow international standards (ISO, ASME, DIN) to ensure every drawing is unambiguous and ready for manufacturing.',points:['Detailed part drawings with full GD&T dimensioning and tolerancing','Assembly drawings with exploded views and bill of materials (BOM)','Floor plans, layout drawings and civil/structural site plans','Conversion of hand sketches, PDFs or scans to clean CAD files','Revision and update of legacy drawings to current ISO/ASME standards','Fabrication drawings for sheet metal, weldments and machined components','Electrical schematics, P&ID and pneumatic circuit diagrams'],sw:[{n:'AutoCAD 2024',d:'Industry-standard 2D drafting'},{n:'DraftSight Pro',d:'Professional 2D CAD platform'},{n:'SolidWorks Drawings',d:'Linked 3D-to-2D output'},{n:'LibreCAD',d:'Open-format deliverables'}],deliv:[{i:'📐',t:'DWG / DXF Files',d:'Native editable drawing files in standard formats'},{i:'📄',t:'PDF Prints',d:'High-res print-ready PDFs at any scale'},{i:'📋',t:'BOM & Parts List',d:'Structured bill of materials and parts numbering'},{i:'📏',t:'Tolerance Reports',d:'GD&T and dimensional tolerance summaries'},{i:'🖨️',t:'Title Block Docs',d:'Company-branded drawing sets with revision history'},{i:'📦',t:'Archive Package',d:'Organised project folder with all source files'}],related:[1,2,5]},
+  {id:1,title:'3D CAD Modeling',headline:'Advanced 3D<br><em>Solid Modeling</em>',sub:'Photorealistic parametric 3D models, assemblies and renders — the digital twin of your product before it\'s built.',chips:['SolidWorks','Fusion 360','CATIA','Inventor','KeyShot','STEP/IGES'],desc:'Our 3D CAD team creates fully parametric solid models that serve as the digital foundation for manufacturing, simulation and marketing. Whether it\'s a single machined component or a 500-part assembly, we deliver accuracy and detail at every level, fully simulation-ready.',points:['Parametric solid and surface models with full feature history tree','Complex assemblies with mate constraints and interference detection','Kinematic motion simulation and animation for presentations','Photorealistic product rendering with studio-quality lighting','Sheet metal, weldment and plastic part specialised modelling','Top-down assembly design using skeleton sketch methodology','STEP/IGES/STL and eDrawings export for any downstream system'],sw:[{n:'SolidWorks 2024',d:'Full parametric solid modelling'},{n:'Fusion 360',d:'Cloud-collaborative CAD/CAM'},{n:'CATIA V5/V6',d:'Aerospace-grade surface modelling'},{n:'Autodesk Inventor',d:'Machine & product design'}],deliv:[{i:'📦',t:'SLDPRT / SLDASM',d:'Native SolidWorks part and assembly files'},{i:'🔩',t:'STEP / IGES',d:'Universal 3D exchange formats for any CAD system'},{i:'🎨',t:'Rendered Images',d:'Studio-quality renders in multiple views and configs'},{i:'🎬',t:'Animations',d:'Assembly explode/collapse and motion animations'},{i:'📐',t:'Engineering Drawings',d:'Associated 2D drawings derived from 3D model'},{i:'📊',t:'Mass Properties',d:'Weight, volume, centre of gravity and inertia reports'}],related:[0,3,5]},
+  {id:2,title:'Product Design',headline:'End-to-End<br><em>Product Design</em>',sub:'From napkin sketch to detailed manufacturing drawings — ergonomic, functional and market-ready product development.',chips:['DFM','DFA','Prototyping','CMF','Ergonomics','KeyShot'],desc:'We partner with entrepreneurs, startups and established manufacturers to create products that are beautiful, functional and easy to produce. Our human-centred design process ensures your product connects with end-users while meeting cost and production targets from day one.',points:['Industrial design concept sketching and ideation workshops','Ergonomic analysis and human-factors engineering assessment','Design for Manufacturing (DFM) and Design for Assembly (DFA) reviews','Material selection and colour/material/finish (CMF) specification','Prototype modelling and rapid design iteration cycles','Packaging and product configuration design','Complete manufacturing documentation package for factory handoff'],sw:[{n:'SolidWorks',d:'Detailed product CAD modelling'},{n:'KeyShot',d:'Photorealistic product rendering'},{n:'Fusion 360',d:'Concept to manufacturing flow'},{n:'Adobe Illustrator',d:'2D concepts and CMF boards'}],deliv:[{i:'💡',t:'Concept Sketches',d:'Ideation drawings exploring multiple design directions'},{i:'📦',t:'3D CAD Model',d:'Fully detailed parametric product model'},{i:'🎨',t:'Render Pack',d:'Marketing-quality rendered images and turntables'},{i:'🏭',t:'MFG Drawings',d:'Complete manufacturing drawing set with tolerances'},{i:'📋',t:'BOM & Specs',d:'Bill of materials and product specification sheet'},{i:'📄',t:'DFM Report',d:'Manufacturing feasibility and cost-reduction notes'}],related:[1,3,4]},
+  {id:3,title:'Machine Design',headline:'Custom Industrial<br><em>Machine Design</em>',sub:'Bespoke industrial machinery designed for precision, durability and efficient manufacture — from concept to construction drawings.',chips:['FEA','Kinematics','Drive Systems','Structural Analysis','Motion Sim','SPM'],desc:'Our mechanical engineers design custom machines from the ground up — conveyor systems, hydraulic presses, jigs, fixtures, special purpose machines (SPM) and more. Every design is rigorously validated through simulation before fabrication begins, saving time and costly rework.',points:['Special purpose machine (SPM) design and complete plant layout','Drive system selection: motors, gearboxes, belts, chains and couplings','Structural steel frame design and weldment 3D modelling','Pneumatic and hydraulic circuit design with component selection','Jig, fixture, die and precision tooling design','Machine guard and safety system design to CE/IS standards','Kinematic analysis and dynamic load calculations with safety factors'],sw:[{n:'SolidWorks Simulation',d:'FEA stress & fatigue analysis'},{n:'ANSYS Mechanical',d:'Advanced multiphysics simulation'},{n:'MATLAB/Simulink',d:'Dynamic system modelling'},{n:'AutoCAD Mechanical',d:'2D machine drawing standard'}],deliv:[{i:'⚙️',t:'3D Machine Model',d:'Full assembly model with all components modelled'},{i:'📊',t:'FEA Report',d:'Stress, deflection and safety factor analysis report'},{i:'📐',t:'Fabrication Drawings',d:'Weldment, machining and assembly drawings'},{i:'🔩',t:'BOM & Vendor List',d:'Complete parts list with commercial component specs'},{i:'📋',t:'Operation Manual',d:'Basic operating and maintenance documentation'},{i:'🎬',t:'Motion Animation',d:'Machine operation animation for operator training'}],related:[0,1,4]},
+  {id:4,title:'Industrial Automation',headline:'Smart Industrial<br><em>Automation</em>',sub:'End-to-end automation solutions — PLC programming, SCADA systems, robotic integration and complete production line design.',chips:['PLC','SCADA','HMI','Robotics','Industry 4.0','IIoT'],desc:'We design and implement intelligent automation solutions that boost productivity, reduce human error and enable real-time data visibility across your facility. From a single conveyor control to a fully networked Industry 4.0 production environment — we deliver it end to end.',points:['PLC programming: Siemens, Allen-Bradley, Mitsubishi, Omron platforms','SCADA and HMI system design, graphics and programming','Conveyor, packaging and material-handling automation systems','Robotic arm integration: FANUC, ABB, KUKA and Universal Robots','Industry 4.0 connectivity: OPC-UA, MQTT and cloud dashboards','Vision system integration for in-line quality inspection','Safety system design: light curtains, e-stops and area scanners'],sw:[{n:'Siemens TIA Portal',d:'S7-1200/1500 PLC programming'},{n:'Rockwell Studio 5000',d:'Allen-Bradley PLC platform'},{n:'Wonderware / Ignition',d:'SCADA & HMI development'},{n:'RobotStudio / KUKA SIM',d:'Offline robot programming'}],deliv:[{i:'💻',t:'PLC Source Code',d:'Commented structured ladder/function-block programs'},{i:'🖥️',t:'SCADA / HMI Screens',d:'Intuitive operator interfaces with alarms and trends'},{i:'🔌',t:'Electrical Drawings',d:'Panel layouts, wiring diagrams and I/O schedules'},{i:'📋',t:'FAT / SAT Procedures',d:'Factory and site acceptance test documentation'},{i:'📖',t:'Technical Manual',d:'Full system manual for operations and maintenance'},{i:'📡',t:'IIoT Dashboard',d:'Cloud-connected production monitoring dashboard'}],related:[2,3,5]},
+  {id:5,title:'Reverse Engineering',headline:'Intelligent<br><em>Reverse Engineering</em>',sub:'3D scanning, point-cloud processing and CAD reconstruction — reviving legacy parts and enabling modernisation of existing equipment.',chips:['3D Scanning','Point Cloud','Mesh-to-CAD','Geomagic','ATOS','Deviation Analysis'],desc:'When original drawings no longer exist, or you need to replicate or improve an existing component, our reverse engineering service fills the gap. We digitise physical objects using high-accuracy structured-light scanners and convert the data into fully editable parametric CAD models ready for manufacturing.',points:['Structured-light and laser 3D scanning of parts up to 2 metres','Point-cloud processing, noise reduction and surface alignment','Mesh-to-solid CAD reconstruction in SolidWorks or CATIA','Deviation analysis comparing scan to CAD (as-built vs. as-designed)','Legacy drawing regeneration from physical samples and worn parts','Tolerance and wear analysis on in-service components','Competitive benchmarking and design teardown studies'],sw:[{n:'Geomagic Design X',d:'Mesh-to-parametric CAD'},{n:'ATOS / GOM Scanner',d:'High-precision structured light scan'},{n:'CloudCompare',d:'Point cloud processing & analysis'},{n:'SolidWorks',d:'Final parametric CAD model creation'}],deliv:[{i:'🔷',t:'Point Cloud Data',d:'Raw and processed scan data in E57/XYZ/PLY'},{i:'🧊',t:'Polygon Mesh',d:'Cleaned watertight STL mesh file'},{i:'📦',t:'CAD Model',d:'Parametric solid model ready for manufacturing'},{i:'📊',t:'Deviation Report',d:'Colour-map comparison between scan and CAD'},{i:'📐',t:'2D Drawings',d:'Manufacturing drawings derived from the CAD model'},{i:'📋',t:'Dimensional Report',d:'Critical dimension measurements with statistics'}],related:[0,1,3]}
+];
+
+const SICONS=[
+  `<svg viewBox="0 0 56 56" fill="none"><rect x="6" y="6" width="44" height="44" stroke="#00ffe7" stroke-width=".8" opacity=".35"/><rect x="12" y="12" width="32" height="32" stroke="#00ffe7" stroke-width=".5" stroke-dasharray="2 2"/><line x1="6" y1="28" x2="50" y2="28" stroke="#00ffe7" stroke-width=".8"/><line x1="28" y1="6" x2="28" y2="50" stroke="#00ffe7" stroke-width=".8"/><circle cx="28" cy="28" r="4" fill="#00ffe7" opacity=".85"/><circle cx="16" cy="16" r="2.5" stroke="#00ffe7" stroke-width=".8"/><circle cx="40" cy="40" r="2.5" stroke="#00ffe7" stroke-width=".8"/><circle cx="40" cy="16" r="2.5" stroke="#00ffe7" stroke-width=".8"/><circle cx="16" cy="40" r="2.5" stroke="#00ffe7" stroke-width=".8"/></svg>`,
+  `<svg viewBox="0 0 56 56" fill="none"><polygon points="28,4 50,16 50,40 28,52 6,40 6,16" stroke="#00ffe7" stroke-width=".8" fill="none" opacity=".4"/><polygon points="28,12 44,21 44,39 28,48 12,39 12,21" stroke="#00ffe7" stroke-width=".5" fill="rgba(0,255,231,.04)"/><line x1="28" y1="4" x2="28" y2="52" stroke="#00ffe7" stroke-width=".4" opacity=".3"/><line x1="6" y1="16" x2="50" y2="40" stroke="#00ffe7" stroke-width=".4" opacity=".3"/><line x1="6" y1="40" x2="50" y2="16" stroke="#00ffe7" stroke-width=".4" opacity=".3"/><circle cx="28" cy="28" r="5" fill="#00ffe7" opacity=".7"/></svg>`,
+  `<svg viewBox="0 0 56 56" fill="none"><rect x="14" y="32" width="10" height="16" stroke="#00ffe7" stroke-width=".8" fill="rgba(0,255,231,.05)"/><rect x="28" y="22" width="10" height="26" stroke="#00ffe7" stroke-width=".8" fill="rgba(0,255,231,.07)"/><rect x="8" y="38" width="40" height="2" fill="rgba(0,255,231,.15)"/><path d="M12 32 L19 20 L25 22" stroke="#00ffe7" stroke-width=".8" fill="none"/><path d="M32 22 L38 12 L46 17" stroke="#00ffe7" stroke-width=".8" fill="none"/><circle cx="19" cy="18" r="3" fill="#00ffe7" opacity=".7"/><circle cx="38" cy="10" r="3" fill="#00ffe7" opacity=".7"/></svg>`,
+  `<svg viewBox="0 0 56 56" fill="none"><circle cx="28" cy="28" r="20" stroke="#00ffe7" stroke-width=".8" opacity=".3"/><circle cx="28" cy="28" r="13" stroke="#00ffe7" stroke-width=".6" stroke-dasharray="3 2"/><path d="M20 28 C20 24,36 24,36 28 C36 32,20 32,20 28Z" fill="rgba(0,255,231,.08)" stroke="#00ffe7" stroke-width=".5"/><line x1="8" y1="28" x2="18" y2="28" stroke="#00ffe7" stroke-width="1.5"/><line x1="38" y1="28" x2="48" y2="28" stroke="#00ffe7" stroke-width="1.5"/><line x1="28" y1="8" x2="28" y2="18" stroke="#00ffe7" stroke-width="1.5"/><line x1="28" y1="38" x2="28" y2="48" stroke="#00ffe7" stroke-width="1.5"/><circle cx="28" cy="28" r="3.5" fill="#00ffe7"/></svg>`,
+  `<svg viewBox="0 0 56 56" fill="none"><rect x="4" y="28" width="12" height="20" stroke="#00ffe7" stroke-width=".8" fill="rgba(0,255,231,.05)"/><rect x="22" y="18" width="12" height="30" stroke="#00ffe7" stroke-width=".8" fill="rgba(0,255,231,.07)"/><rect x="40" y="10" width="12" height="38" stroke="#00ffe7" stroke-width=".8" fill="rgba(0,255,231,.09)"/><circle cx="10" cy="24" r="3.5" fill="#00ffe7" opacity=".7"/><circle cx="28" cy="14" r="3.5" fill="#00ffe7" opacity=".7"/><circle cx="46" cy="6" r="3.5" fill="#00ffe7" opacity=".7"/><line x1="10" y1="24" x2="28" y2="14" stroke="#00ffe7" stroke-width=".7"/><line x1="28" y1="14" x2="46" y2="6" stroke="#00ffe7" stroke-width=".7"/></svg>`,
+  `<svg viewBox="0 0 56 56" fill="none"><path d="M8 48 L8 28 L20 18 L32 26 L44 12 L48 12 L48 48Z" fill="rgba(0,255,231,.05)" stroke="#00ffe7" stroke-width=".8"/><circle cx="8" cy="28" r="3.5" fill="#00ffe7"/><circle cx="20" cy="18" r="3.5" fill="#00ffe7"/><circle cx="32" cy="26" r="3.5" fill="#00ffe7"/><circle cx="44" cy="12" r="3.5" fill="#00ffe7"/><line x1="6" y1="48" x2="50" y2="48" stroke="#00ffe7" stroke-width=".5" opacity=".4"/><line x1="6" y1="8" x2="6" y2="50" stroke="#00ffe7" stroke-width=".5" opacity=".4"/></svg>`
+];
+
+const PROC=[
+  {n:'01',t:'Requirement Brief',d:'Deep consultation to capture scope, constraints and engineering goals precisely.'},
+  {n:'02',t:'Concept Design',d:'Sketches and concepts evaluated against feasibility and client vision.'},
+  {n:'03',t:'3D Development',d:'Iterative 3D modeling with structured client review and feedback loops.'},
+  {n:'04',t:'Validation',d:'FEA, simulations and compliance checks verify complete design integrity.'},
+  {n:'05',t:'Delivery & Support',d:'Final files, drawings and ongoing post-delivery technical support included.'}
+];
+
+const WHY=[
+  {i:'⚙',t:'Expert Engineering Team',d:'Certified mechanical engineers with real-world industry experience across manufacturing, automotive and process sectors.'},
+  {i:'⚡',t:'Fast Turnaround',d:'Agile parallel workflows and dedicated project managers ensure on-time delivery without sacrificing precision.'},
+  {i:'◎',t:'Sub-Millimeter Precision',d:'ISO-compliant drawings, GD&T-correct models and simulation-verified designs — uncompromising accuracy every time.'},
+  {i:'✦',t:'End-to-End Ownership',d:'From first sketch to final manufacturing file — total project ownership and single-point accountability.'}
+];
+
+const FEAT=[
+  {n:'01',t:'Parametric Solid Modeling',d:'Full feature-history models with easily editable parameters for rapid design iterations.',idx:1},
+  {n:'02',t:'Assembly & Motion Simulation',d:'Multi-body assemblies with mate constraints, interference checks and kinematic simulation.',idx:1},
+  {n:'03',t:'FEA Structural Analysis',d:'Stress, deformation, fatigue and thermal validation before a single part goes to the machine shop.',idx:3},
+  {n:'04',t:'Industrial Automation Design',d:'PLC-driven system layouts, conveyor designs and robot-arm integrations modelled in 3D before build.',idx:4}
+];
+
+const IND=['Automotive','Manufacturing','Aerospace','Oil & Gas','Pharmaceuticals','Food Processing','Agriculture','Construction','Electronics','Packaging','Mining','Textiles','Defence','Robotics','Energy','Marine'];
+const MQ=['2D CAD Drafting','3D Solid Modeling','Machine Design','Product Design','Industrial Automation','PLC Programming','Robotics Integration','Reverse Engineering','FEA Analysis','Prototype Development','SCADA Systems','Sheet Metal Design'];
+
+// BUILD HOME COMPONENTS
+function buildAll(){
+  // Marquee
+  const mt=document.getElementById('mtrack');
+  mt.innerHTML=[...MQ,...MQ].map((s,i)=>`<span${i%3===0?' class="hl"':''}>${s}</span>`).join('');
+  // Services grid
+  const sg=document.getElementById('sgrid');
+  sg.innerHTML=SVC.map((s,i)=>`
+  <div class="scard" onclick="openSvc(${i})" tabindex="0" role="button" aria-label="Open ${s.title}">
+    <div class="scard-num">0${i+1}</div>
+    <div class="scard-icon">${SICONS[i]}<div class="icon-orbit"></div><div class="icon-orbit2"></div></div>
+    <div class="scard-title">${s.title}</div>
+    <p class="scard-text">${s.sub}</p>
+    <div class="scard-chips">${s.chips.slice(0,4).map(c=>`<span class="chip">${c}</span>`).join('')}</div>
+    <div class="scard-link">Explore Service <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7 2l5 5-5 5" stroke="#00ffe7" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+  </div>`).join('');
+  // Capabilities feats
+  const fg=document.getElementById('feats');
+  fg.innerHTML=FEAT.map(f=>`
+  <div class="feat" onclick="openSvc(${f.idx})" tabindex="0" role="button">
+    <div class="feat-n">${f.n}</div>
+    <div><div class="feat-title">${f.t}</div><p class="feat-desc">${f.d}</p></div>
+  </div>`).join('');
+  // Process
+  const pg=document.getElementById('psteps');
+  pg.innerHTML=PROC.map(p=>`
+  <div class="pstep">
+    <div class="pstep-hex">
+      <svg viewBox="0 0 100 100" fill="none">
+        <polygon points="50,3 95,27.5 95,72.5 50,97 5,72.5 5,27.5" stroke="#00ffe7" stroke-width=".8" fill="rgba(7,14,26,.95)" opacity=".95"/>
+        <polygon points="50,11 88,32.5 88,67.5 50,89 12,67.5 12,32.5" stroke="#00ffe7" stroke-width=".4" fill="none" opacity=".25" stroke-dasharray="2 3"/>
+      </svg>
+      <div class="pstep-n">${p.n}</div>
+    </div>
+    <div class="pstep-title">${p.t}</div>
+    <p class="pstep-desc">${p.d}</p>
+  </div>`).join('');
+  // Why
+  const wg=document.getElementById('why-list');
+  wg.innerHTML=WHY.map(w=>`
+  <div class="why-item">
+    <div class="why-icon">${w.i}</div>
+    <div><div class="why-title">${w.t}</div><p class="why-desc">${w.d}</p></div>
+  </div>`).join('');
+  // Industries
+  const ig=document.getElementById('ipills');
+  ig.innerHTML=IND.map(n=>`<div class="ipill">${n}</div>`).join('');
+}
+
+// NAVIGATION
+function navTo(sel){
+  const hp=document.getElementById('home-page');
+  if(!hp.classList.contains('active')){goHome()}
+  setTimeout(()=>{const el=document.querySelector(sel);if(el)el.scrollIntoView({behavior:'smooth',block:'start'})},150);
+}
+function goHome(){
+  document.getElementById('home-page').classList.add('active');
+  document.getElementById('svc-page').classList.remove('active');
+  document.getElementById('nav-links').style.display='flex';
+  document.getElementById('nav-back').style.display='none';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function openSvc(idx){
+  const s=SVC[idx];
+  document.getElementById('svc-bc-name').textContent=s.title;
+  document.getElementById('svc-title').innerHTML=s.headline;
+  document.getElementById('svc-sub').textContent=s.sub;
+  document.getElementById('svc-tags').innerHTML=s.chips.map(c=>`<span class="svc-tag">${c}</span>`).join('');
+  document.getElementById('svc-body').innerHTML=`
+  <div class="svc-grid rv">
+    <div>
+      <h3 class="svc-sect-h">Service <span class="ac">Overview</span></h3>
+      <p class="svc-text">${s.desc}</p>
+      <ul class="svc-list">${s.points.map(p=>`<li>${p}</li>`).join('')}</ul>
+    </div>
+    <div>
+      <h3 class="svc-sect-h">Tools & <span class="ac">Software</span></h3>
+      <p class="svc-text">Industry-leading platforms used on every project in this service area:</p>
+      <div class="svc-software">${s.sw.map(sw=>`<div class="sw-item"><div class="sw-name">${sw.n}</div><div class="sw-desc">${sw.d}</div></div>`).join('')}</div>
+    </div>
+  </div>
+  <div class="rv">
+    <h3 class="svc-sect-h">What You <span class="ac">Receive</span></h3>
+    <p class="svc-text" style="margin-bottom:16px">Every project includes a complete documentation and deliverables package:</p>
+    <div class="svc-deliverables">${s.deliv.map(d=>`<div class="deliv"><div class="deliv-icon">${d.i}</div><div class="deliv-title">${d.t}</div><p class="deliv-desc">${d.d}</p></div>`).join('')}</div>
+  </div>
+  <div class="svc-cta-band rv" style="margin-top:56px">
+    <div>
+      <h3>${s.title} — Ready to Start?</h3>
+      <p>Tell us about your project and we'll respond within 24 hours with a tailored quote and timeline.</p>
+    </div>
+    <button class="btn-p" onclick="goHome();setTimeout(()=>navTo('#contact-sect'),300)">Request a Quote <svg width="13" height="13" fill="none" viewBox="0 0 14 14"><path d="M2 7h10M7 2l5 5-5 5" stroke="#000" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+  </div>
+  <div style="margin-top:72px" class="rv">
+    <div class="sec-label">Related Services</div>
+    <h3 class="svc-sect-h">You May Also <span class="ac">Need</span></h3>
+    <div class="rel-grid">${s.related.map(ri=>`<div class="rel-card" onclick="openSvc(${ri})"><div class="rel-title">${SVC[ri].title}</div><p class="rel-desc">${SVC[ri].sub.substring(0,95)}…</p><div class="rel-arrow">Explore →</div></div>`).join('')}</div>
+  </div>`;
+  document.getElementById('home-page').classList.remove('active');
+  document.getElementById('svc-page').classList.add('active');
+  document.getElementById('nav-links').style.display='none';
+  document.getElementById('nav-back').style.display='flex';
+  window.scrollTo({top:0,behavior:'instant'});
+  setTimeout(initReveal,80);
+}
+
+// BACKGROUND CANVAS
+(function(){
+  const c=document.getElementById('bgc'),ctx=c.getContext('2d');
+  let W,H;const res=()=>{W=c.width=innerWidth;H=c.height=innerHeight};res();addEventListener('resize',res);
+  const pts=Array.from({length:70},()=>({x:Math.random()*3000,y:Math.random()*2000,vx:(Math.random()-.5)*.22,vy:(Math.random()-.5)*.22,r:Math.random()*1.4+.3,a:Math.random()*.4+.1}));
+  let ga=0;
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    ctx.save();ctx.translate(W/2,H/2);ctx.rotate(ga*.0003);
+    ctx.strokeStyle='rgba(0,87,255,.025)';ctx.lineWidth=.5;
+    for(let x=-W;x<W;x+=55){ctx.beginPath();ctx.moveTo(x,-H);ctx.lineTo(x,H);ctx.stroke()}
+    for(let y=-H;y<H;y+=55){ctx.beginPath();ctx.moveTo(-W,y);ctx.lineTo(W,y);ctx.stroke()}
+    ctx.restore();ga++;
+    pts.forEach((p,i)=>{
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.28);
+      ctx.fillStyle=`rgba(0,255,231,${p.a})`;ctx.fill();
+      for(let j=i+1;j<pts.length;j++){
+        const q=pts[j],d=Math.hypot(p.x-q.x,p.y-q.y);
+        if(d<105){ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.strokeStyle=`rgba(0,100,255,${.09*(1-d/105)})`;ctx.lineWidth=.4;ctx.stroke()}
+      }
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// THREE.JS 3D GEAR SCENE
+(function(){
+  const wrap=document.getElementById('mc'),canvas=document.getElementById('three-canvas');
+  if(!canvas||typeof THREE==='undefined')return;
+  const W=wrap.clientWidth,H=wrap.clientHeight;
+  const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+  renderer.setSize(W,H);renderer.setPixelRatio(devicePixelRatio);renderer.setClearColor(0,0);
+  const scene=new THREE.Scene();
+  const cam=new THREE.PerspectiveCamera(42,W/H,.1,100);
+  cam.position.set(4,3.5,5.5);cam.lookAt(0,.3,0);
+  scene.add(new THREE.AmbientLight(0x001a3a,3));
+  const dl=new THREE.DirectionalLight(0x00ffe7,4);dl.position.set(5,8,5);scene.add(dl);
+  const pl=new THREE.PointLight(0x0057ff,5,12);pl.position.set(-4,2,-2);scene.add(pl);
+  const pl2=new THREE.PointLight(0x00ffe7,2.5,10);pl2.position.set(3,-2,3);scene.add(pl2);
+  const bMat=new THREE.MeshPhongMaterial({color:0x002050,emissive:0x000c20,specular:0x00ffe7,shininess:100});
+  const wMat=new THREE.MeshBasicMaterial({color:0x00ffe7,wireframe:true,transparent:true,opacity:.07});
+  function mkGear(teeth,R,r,h){
+    const shape=new THREE.Shape();
+    const pts=[];
+    for(let i=0;i<teeth*2;i++){const a=(i/(teeth*2))*Math.PI*2;pts.push(new THREE.Vector2(Math.cos(a)*(i%2===0?R:R*.8),Math.sin(a)*(i%2===0?R:R*.8)))}
+    shape.setFromPoints(pts);const hole=new THREE.Path();hole.absarc(0,0,r,0,Math.PI*2);shape.holes.push(hole);
+    return new THREE.ExtrudeGeometry(shape,{depth:h,bevelEnabled:true,bevelThickness:.06,bevelSize:.05});
+  }
+  const g1g=mkGear(18,1.3,.4,.28),g1=new THREE.Mesh(g1g,bMat);g1.position.set(0,.5,0);scene.add(g1);
+  const g1w=new THREE.Mesh(g1g,wMat);g1w.position.copy(g1.position);scene.add(g1w);
+  const g2g=mkGear(11,.87,.28,.22),g2=new THREE.Mesh(g2g,new THREE.MeshPhongMaterial({color:0x001530,emissive:0x000810,specular:0x00ffe7,shininess:80}));
+  g2.position.set(2.2,.5,.12);scene.add(g2);const g2w=new THREE.Mesh(g2g,wMat);g2w.position.copy(g2.position);scene.add(g2w);
+  const g3g=mkGear(8,.55,.18,.18),g3=new THREE.Mesh(g3g,new THREE.MeshPhongMaterial({color:0x001830,emissive:0x000a18,specular:0x00ffe7,shininess:60}));
+  g3.position.set(-1.8,.5,.08);scene.add(g3);const g3w=new THREE.Mesh(g3g,wMat);g3w.position.copy(g3.position);scene.add(g3w);
+  const shaft=new THREE.Mesh(new THREE.CylinderGeometry(.11,.11,1.8,20),new THREE.MeshPhongMaterial({color:0x003366,specular:0x00ffe7,shininess:140}));
+  shaft.position.set(0,.5,0);shaft.rotation.x=Math.PI/2;scene.add(shaft);
+  const base=new THREE.Mesh(new THREE.BoxGeometry(5,.1,3),new THREE.MeshPhongMaterial({color:0x000e1f,transparent:true,opacity:.8}));
+  base.position.set(.2,-.22,0);scene.add(base);
+  const grid=new THREE.GridHelper(5,12,0x001a4a,0x000d28);grid.position.set(.2,-.17,0);scene.add(grid);
+  const mkTorus=(r,w,a,col)=>{const m=new THREE.Mesh(new THREE.TorusGeometry(r,w,8,80),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:a}));return m};
+  const ring1=mkTorus(1.6,.025,.2,0x00ffe7);ring1.position.set(0,.64,0);scene.add(ring1);
+  const ring2=mkTorus(2.4,.015,.1,0x0057ff);ring2.position.set(.2,.3,0);ring2.rotation.x=.3;scene.add(ring2);
+  const dGeo=new THREE.SphereGeometry(.055,8,8);
+  const dots=Array.from({length:10},()=>{const d=new THREE.Mesh(dGeo,new THREE.MeshBasicMaterial({color:0x00ffe7,transparent:true,opacity:.8}));scene.add(d);return d});
+  let mx=0,my=0,drag=false,lx=0,ly=0,rX=0,rY=0;
+  wrap.addEventListener('mousedown',e=>{drag=true;lx=e.clientX;ly=e.clientY});
+  wrap.addEventListener('mousemove',e=>{if(drag){rY+=(e.clientX-lx)*.008;rX+=(e.clientY-ly)*.004;lx=e.clientX;ly=e.clientY}const r=wrap.getBoundingClientRect();mx=(e.clientX-r.left-r.width/2)/r.width;my=(e.clientY-r.top-r.height/2)/r.height});
+  wrap.addEventListener('mouseup',()=>drag=false);wrap.addEventListener('mouseleave',()=>drag=false);
+  let t=0;
+  function anim(){
+    requestAnimationFrame(anim);t+=.01;
+    g1.rotation.z+=.007;g1w.rotation.z=g1.rotation.z;
+    g2.rotation.z-=.0115;g2w.rotation.z=g2.rotation.z;
+    g3.rotation.z+=.018;g3w.rotation.z=g3.rotation.z;
+    ring1.rotation.z=t*.25;ring2.rotation.y=t*.15;
+    dots.forEach((d,i)=>{const a=(i/dots.length)*Math.PI*2+t*.45;d.position.set(Math.cos(a)*1.6,.64,Math.sin(a)*1.6);d.material.opacity=.25+.75*Math.abs(Math.sin(a+t))});
+    if(!drag){rY+=(mx*.6-rY)*.04;rX+=(-my*.25-rX)*.04}
+    scene.rotation.y+=(rY-scene.rotation.y)*.06;scene.rotation.x+=(rX-scene.rotation.x)*.06;
+    pl.position.set(Math.sin(t)*4,2,Math.cos(t)*4);
+    renderer.render(scene,cam);
+  }
+  anim();
+  addEventListener('resize',()=>{const w=wrap.clientWidth,h=wrap.clientHeight;renderer.setSize(w,h);cam.aspect=w/h;cam.updateProjectionMatrix()});
+})();
+
+// SCROLL REVEAL
+function initReveal(){
+  document.querySelectorAll('.rv,.rv2').forEach(el=>{
+    el.classList.remove('vis');
+    new IntersectionObserver((en,obs)=>{if(en[0].isIntersecting){el.classList.add('vis');obs.disconnect()}},{threshold:.08}).observe(el);
+  });
+}
+initReveal();
+
+// COUNT UP
+new IntersectionObserver(en=>{
+  if(!en[0].isIntersecting)return;
+  document.querySelectorAll('[data-to]').forEach(el=>{
+    const target=+el.dataset.to;let n=0;const step=target/55;
+    const iv=setInterval(()=>{n=Math.min(n+step,target);el.textContent=Math.round(n)+(target>=98?'%':'+');if(n>=target)clearInterval(iv)},18);
+  });
+},{threshold:.5}).observe(document.querySelector('.hero-stats'));
+
+// CURSOR
+const cur=document.getElementById('cursor'),ring=document.getElementById('cursor-ring');
+let cx=0,cy=0,rx=0,ry=0;
+addEventListener('mousemove',e=>{cx=e.clientX;cy=e.clientY});
+(function lp(){rx+=(cx-rx)*.12;ry+=(cy-ry)*.12;cur.style.left=cx+'px';cur.style.top=cy+'px';ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(lp)})();
+document.addEventListener('mouseover',e=>{if(e.target.closest('a,button,[onclick],[tabindex]')){cur.style.width='18px';cur.style.height='18px';ring.style.width='50px';ring.style.height='50px'}});
+document.addEventListener('mouseout',e=>{if(e.target.closest('a,button,[onclick],[tabindex]')){cur.style.width='10px';cur.style.height='10px';ring.style.width='32px';ring.style.height='32px'}});
+
+// FORM
+function submitForm(){const b=document.getElementById('submit-btn');b.textContent='✓ Message Sent!';b.style.background='linear-gradient(135deg,#00ff88,#0057ff)';setTimeout(()=>{b.textContent='Send Project Brief →';b.style.background=''},4000)}
+
+// INIT
+buildAll();
+</script>
+</body>
+</html>
