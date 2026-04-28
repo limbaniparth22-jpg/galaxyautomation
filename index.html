@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -590,17 +590,29 @@ function openSvc(idx){
     shape.setFromPoints(pts);const hole=new THREE.Path();hole.absarc(0,0,r,0,Math.PI*2);shape.holes.push(hole);
     return new THREE.ExtrudeGeometry(shape,{depth:h,bevelEnabled:true,bevelThickness:.06,bevelSize:.05});
   }
-  const g1g=mkGear(18,1.3,.4,.28),g1=new THREE.Mesh(g1g,bMat);g1.position.set(0,.5,0);scene.add(g1);
+  // Gear 1 (large driver): 18 teeth, pitch radius R1=1.3, positioned at origin
+  // Gear 2 (medium): 11 teeth, pitch radius R2=0.87
+  //   mesh distance = R1 + R2 = 1.3 + 0.87 = 2.17  → place at x=+2.17
+  //   speed ratio ω2 = -ω1 * (R1/R2) = -ω1 * (1.3/0.87) ≈ -ω1 * 1.494
+  // Gear 3 (small): 8 teeth, pitch radius R3=0.55
+  //   meshes on the LEFT of Gear 1: distance = R1 + R3 = 1.3 + 0.55 = 1.85 → place at x=-1.85
+  //   speed ratio ω3 = -ω1 * (R1/R3) = -ω1 * (1.3/0.55) ≈ -ω1 * 2.364
+  const G1_SPEED = 0.007;
+  const G1_R = 1.3, G2_R = 0.87, G3_R = 0.55;
+  const G2_SPEED = -G1_SPEED * (G1_R / G2_R);  // opposite, faster
+  const G3_SPEED = -G1_SPEED * (G1_R / G3_R);  // opposite to g1, faster
+
+  const g1g=mkGear(18,G1_R,.4,.28),g1=new THREE.Mesh(g1g,bMat);g1.position.set(0,.5,0);scene.add(g1);
   const g1w=new THREE.Mesh(g1g,wMat);g1w.position.copy(g1.position);scene.add(g1w);
-  const g2g=mkGear(11,.87,.28,.22),g2=new THREE.Mesh(g2g,new THREE.MeshPhongMaterial({color:0x001530,emissive:0x000810,specular:0x00ffe7,shininess:80}));
-  g2.position.set(2.2,.5,.12);scene.add(g2);const g2w=new THREE.Mesh(g2g,wMat);g2w.position.copy(g2.position);scene.add(g2w);
-  const g3g=mkGear(8,.55,.18,.18),g3=new THREE.Mesh(g3g,new THREE.MeshPhongMaterial({color:0x001830,emissive:0x000a18,specular:0x00ffe7,shininess:60}));
-  g3.position.set(-1.8,.5,.08);scene.add(g3);const g3w=new THREE.Mesh(g3g,wMat);g3w.position.copy(g3.position);scene.add(g3w);
+  const g2g=mkGear(11,G2_R,.28,.22),g2=new THREE.Mesh(g2g,new THREE.MeshPhongMaterial({color:0x001530,emissive:0x000810,specular:0x00ffe7,shininess:80}));
+  g2.position.set(G1_R+G2_R,.5,.12);scene.add(g2);const g2w=new THREE.Mesh(g2g,wMat);g2w.position.copy(g2.position);scene.add(g2w);
+  const g3g=mkGear(8,G3_R,.18,.18),g3=new THREE.Mesh(g3g,new THREE.MeshPhongMaterial({color:0x001830,emissive:0x000a18,specular:0x00ffe7,shininess:60}));
+  g3.position.set(-(G1_R+G3_R),.5,.08);scene.add(g3);const g3w=new THREE.Mesh(g3g,wMat);g3w.position.copy(g3.position);scene.add(g3w);
   const shaft=new THREE.Mesh(new THREE.CylinderGeometry(.11,.11,1.8,20),new THREE.MeshPhongMaterial({color:0x003366,specular:0x00ffe7,shininess:140}));
   shaft.position.set(0,.5,0);shaft.rotation.x=Math.PI/2;scene.add(shaft);
-  const base=new THREE.Mesh(new THREE.BoxGeometry(5,.1,3),new THREE.MeshPhongMaterial({color:0x000e1f,transparent:true,opacity:.8}));
-  base.position.set(.2,-.22,0);scene.add(base);
-  const grid=new THREE.GridHelper(5,12,0x001a4a,0x000d28);grid.position.set(.2,-.17,0);scene.add(grid);
+  const base=new THREE.Mesh(new THREE.BoxGeometry(6,.1,3),new THREE.MeshPhongMaterial({color:0x000e1f,transparent:true,opacity:.8}));
+  base.position.set(.3,-.22,0);scene.add(base);
+  const grid=new THREE.GridHelper(6,14,0x001a4a,0x000d28);grid.position.set(.3,-.17,0);scene.add(grid);
   const mkTorus=(r,w,a,col)=>{const m=new THREE.Mesh(new THREE.TorusGeometry(r,w,8,80),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:a}));return m};
   const ring1=mkTorus(1.6,.025,.2,0x00ffe7);ring1.position.set(0,.64,0);scene.add(ring1);
   const ring2=mkTorus(2.4,.015,.1,0x0057ff);ring2.position.set(.2,.3,0);ring2.rotation.x=.3;scene.add(ring2);
@@ -613,9 +625,9 @@ function openSvc(idx){
   let t=0;
   function anim(){
     requestAnimationFrame(anim);t+=.01;
-    g1.rotation.z+=.007;g1w.rotation.z=g1.rotation.z;
-    g2.rotation.z-=.0115;g2w.rotation.z=g2.rotation.z;
-    g3.rotation.z+=.018;g3w.rotation.z=g3.rotation.z;
+    g1.rotation.z+=G1_SPEED;  g1w.rotation.z=g1.rotation.z;
+    g2.rotation.z+=G2_SPEED;  g2w.rotation.z=g2.rotation.z;
+    g3.rotation.z+=G3_SPEED;  g3w.rotation.z=g3.rotation.z;
     ring1.rotation.z=t*.25;ring2.rotation.y=t*.15;
     dots.forEach((d,i)=>{const a=(i/dots.length)*Math.PI*2+t*.45;d.position.set(Math.cos(a)*1.6,.64,Math.sin(a)*1.6);d.material.opacity=.25+.75*Math.abs(Math.sin(a+t))});
     if(!drag){rY+=(mx*.6-rY)*.04;rX+=(-my*.25-rX)*.04}
@@ -653,8 +665,58 @@ addEventListener('mousemove',e=>{cx=e.clientX;cy=e.clientY});
 document.addEventListener('mouseover',e=>{if(e.target.closest('a,button,[onclick],[tabindex]')){cur.style.width='18px';cur.style.height='18px';ring.style.width='50px';ring.style.height='50px'}});
 document.addEventListener('mouseout',e=>{if(e.target.closest('a,button,[onclick],[tabindex]')){cur.style.width='10px';cur.style.height='10px';ring.style.width='32px';ring.style.height='32px'}});
 
-// FORM
-function submitForm(){const b=document.getElementById('submit-btn');b.textContent='✓ Message Sent!';b.style.background='linear-gradient(135deg,#00ff88,#0057ff)';setTimeout(()=>{b.textContent='Send Project Brief →';b.style.background=''},4000)}
+// FORM — collects all fields and opens mailto: so the inquiry lands directly in inbox
+function submitForm(){
+  const name    = document.querySelector('.cform input[type="text"]').value.trim();
+  const email   = document.querySelector('.cform input[type="email"]').value.trim();
+  const service = document.querySelector('.cform select').value;
+  const brief   = document.querySelector('.cform textarea').value.trim();
+
+  // Basic validation
+  if(!name || !email || !service || !brief){
+    const b=document.getElementById('submit-btn');
+    const orig=b.textContent;
+    b.textContent='⚠ Please fill all fields';
+    b.style.background='linear-gradient(135deg,#ff4d00,#c00)';
+    setTimeout(()=>{b.textContent=orig;b.style.background=''},2800);
+    return;
+  }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    const b=document.getElementById('submit-btn');
+    const orig=b.textContent;
+    b.textContent='⚠ Enter a valid email';
+    b.style.background='linear-gradient(135deg,#ff4d00,#c00)';
+    setTimeout(()=>{b.textContent=orig;b.style.background=''},2800);
+    return;
+  }
+
+  const to      = 'info@galaxyautomation.in';
+  const subject = encodeURIComponent(`[Galaxy Automation] Inquiry: ${service} — from ${name}`);
+  const body    = encodeURIComponent(
+`Hello Galaxy Automation Team,
+
+I would like to inquire about your "${service}" service.
+
+--- Contact Details ---
+Name    : ${name}
+Email   : ${email}
+Service : ${service}
+
+--- Project Brief ---
+${brief}
+
+---
+This inquiry was submitted via the Galaxy Automation website.`
+  );
+
+  window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
+
+  // Visual feedback
+  const b=document.getElementById('submit-btn');
+  b.textContent='✓ Opening your email client…';
+  b.style.background='linear-gradient(135deg,#00ff88,#0057ff)';
+  setTimeout(()=>{b.textContent='Send Project Brief →';b.style.background=''},5000);
+}
 
 // INIT
 buildAll();
